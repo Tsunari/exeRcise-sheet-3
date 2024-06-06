@@ -92,18 +92,79 @@ b)  Load the data for both years into R. Check the type of the count
     not numeric? Fix the problem in an appropriate manner, it is OK if
     some of the counts are inaccurate because of this. Explain your
     solution and the repercussions.
+    
+```{r}
+library(tidyverse)
+
+data_2022 <- read.csv(file.path("data", "open_data_portal_2022.csv"))
+data_2023 <- read.csv(file.path("data", "vornamen-muenchen-2023.csv"))
+
+str(data_2022)
+str(data_2023)
+
+data_2022$Anzahl <- ifelse(data_2022$Anzahl == "4 oder weniger", 4, as.numeric(data_2022$Anzahl))
+data_2023$Anzahl <- ifelse(data_2023$Anzahl == "4 oder weniger", 4, as.numeric(data_2023$Anzahl))
+```
+    
+- Data is not numeric because it was decided to say "4 oder weniger" if the amount is smaller than 4 which is a String.
+- The data is converted into numeric values using an ifelse - statement. 
+- The repercussion is that we now do not know right away from looking at the data that 4 means "4 oder weniger".
+
 
 c)  Calculate the total number of babies born in Munich in 2022
     and 2023. Which year had the bigger baby-boom?
+    
+```{r}
+total_births_2022 <- sum(data_2022$Anzahl)
+total_births_2023 <- sum(data_2023$Anzahl)
 
+cat("Total births in Munich in 2022:", total_births_2022, "\n")
+cat("Total births in Munich in 2023:", total_births_2023, "\n")
+cat("Year with baby boom:", ifelse(total_births_2022 > total_births_2023, "2022", "2023"))
+```
+    
 d)  Add a new column `year` to both datasets which holds the correct
     year for each.
 
+```{r}
+data_2022 <- data_2022 %>%
+  mutate(year = 2022)
+
+data_2023 <- data_2023 %>%
+  mutate(year = 2023)
+```
+
 e)  Combine both datasets into one using `bind_rows()`.
+
+```{r}
+combined_data <- bind_rows(data_2022, data_2023)
+```
 
 f)  Combine the counts for same names to determine the most popular
     names across both years. Print out the top 10 names in a nicely
     formatted table for both years. Include a table caption.
+    
+```{r}
+name_counts_22_23 <- combined_data %>%
+  group_by(Vorname) %>%
+  summarise(Anzahl = sum(Anzahl))
+
+name_counts_22_23 <- name_counts_22_23 %>%
+  arrange(desc(Anzahl))
+
+top_10_names_22_23 <- name_counts_22_23[1:10,]
+top_10_names_22 <- data_2022[1:10,] %>%
+  summarise(Vorname = Vorname, Anzahl = Anzahl)
+top_10_names_23 <- data_2023[1:10,] %>%
+  summarise(Vorname = Vorname, Anzahl = Anzahl)
+
+top_names_table <- cbind(top_10_names_22 %>% rename(Anzahl_2022 = Anzahl),
+                         top_10_names_23 %>% rename(Anzahl_2023 = Anzahl),
+                         top_10_names_22_23 %>% rename(Anzahl_combined = Anzahl))
+
+knitr::kable(top_names_table, caption = "Anzahl des Aufkommen der Vornamen Nulljähriger in München")
+```
+    
 
 ## Exercise 4: Open Analysis (4 points)
 
