@@ -160,7 +160,7 @@ top_10_names_23 <- data_2023[1:10,] %>%
 
 top_names_table <- cbind(top_10_names_22 %>% rename(Anzahl_2022 = Anzahl),
                          top_10_names_23 %>% rename(Anzahl_2023 = Anzahl),
-                         top_10_names_22_23 %>% rename(Anzahl_combined = Anzahl))
+                         top_10_names_22_23 %>% rename(Anzahl_22_23 = Anzahl))
 
 knitr::kable(top_names_table, caption = "Anzahl des Aufkommen der Vornamen Nulljähriger in München")
 ```
@@ -175,20 +175,58 @@ determining the research question yourself.
 a)  Go to <https://github.com/owid/owid-datasets/tree/master/datasets>
     and choose a dataset that interests you. You can have a look at
     <https://ourworldindata.org/> to gather some inspiration.
+    
+    
 b)  Download the dataset and track it in git.
 c)  Put the name / title of the dataset and a link to it below.
 
--   Dataset Name: ...
--   Link: <https://github.com/owid/owid-datasets/>...
+-   Dataset Name: Population covered by the internet - Internet World Stats (2019)
+-   Link: [Github link to dataset](https://github.com/owid/owid-datasets/tree/master/datasets/Population%20covered%20by%20the%20internet%20-%20Internet%20World%20Stats%20(2019))
+
+Note: Very bad naming. It suggests the worldwide coverage but just is actually just African coverage.
 
 d)  Come up with a (research) question you want to answer with the data
     and briefly explain why you believe this is an interesting question
     within one sentence. It should be a question that can be answered
     with the dataset and using R.
+    
+Question: What is the percentage of African coverage by the internet in recent years?
+
+If anyone was asked to guess which continent has the worst internet coverage, most people would likely say Africa and they would certainly be right. Now it would be interesting to see the actual numbers. 
+    
 e)  Use R to answer your chosen question.
+
+```{r}
+african_population_covered_internet <- read.csv(
+  file.path("data", "Population covered by the internet - Internet World Stats (2019).csv")
+  )
+
+african_population_covered_internet <- rename(
+  african_population_covered_internet, percentage_covered = Share.of.population.covered.by.the.internet..in...
+  )
+
+mean_coverage_percentage <- mean(african_population_covered_internet$percentage_covered)
+
+cat("African internet coverage (2019):", mean_coverage_percentage, "%")
+```
+
 f)  Create a meaningful plot / figure with the dataset. Make sure to
     provide a figure caption (via the chunk options / Rmarkdown) and
     correctly label the figure.
+    
+```{r fig.cap="Top 10 countries African Internet Coverage (2019)"}
+african_population_covered_internet <- african_population_covered_internet %>%
+  arrange(desc(percentage_covered))
+
+top_10_countries <- african_population_covered_internet[1:10, ]
+
+ggplot(top_10_countries, aes(x = percentage_covered, y = reorder(Entity, percentage_covered))) +
+  geom_bar(stat = "identity") +
+  labs(x = "Internet Coverage (%)",
+       y = "Country")
+```
+    
+    
 
 ## Final Note
 
